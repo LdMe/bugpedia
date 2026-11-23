@@ -1,0 +1,179 @@
+# Documentación Swagger (OpenAPI) de /api/bugs y sus soluciones
+
+paths:
+  /api/bugs:
+    get:
+      summary: Listar bugs (los más recientes primero)
+      tags:
+        - Bugs
+      security: []
+      parameters:
+        - in: query
+          name: technology
+          description: Solo los bugs de esta tecnología
+          schema:
+            $ref: "#/components/schemas/Technology"
+      responses:
+        "200":
+          description: Lista de bugs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Bug"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    post:
+      summary: Registrar un bug
+      description: El autor sale del token. Un bug puede crearse sin soluciones.
+      tags:
+        - Bugs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BugInput"
+      responses:
+        "201":
+          $ref: "#/components/responses/BugOk"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  "/api/bugs/{id}":
+    get:
+      summary: Ver un bug con sus soluciones
+      tags:
+        - Bugs
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/BugId"
+      responses:
+        "200":
+          $ref: "#/components/responses/BugOk"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      summary: Editar un bug (solo el autor o un admin)
+      description: Solo cambia los campos enviados. author y solutions no se pueden editar.
+      tags:
+        - Bugs
+      parameters:
+        - $ref: "#/components/parameters/BugId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BugUpdate"
+      responses:
+        "200":
+          $ref: "#/components/responses/BugOk"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      summary: Borrar un bug y sus soluciones (solo el autor o un admin)
+      tags:
+        - Bugs
+      parameters:
+        - $ref: "#/components/parameters/BugId"
+      responses:
+        "200":
+          description: Bug borrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Bug eliminado de la Bugpedia
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  "/api/bugs/{id}/solutions":
+    post:
+      summary: Añadir una solución a un bug
+      description: Cualquier usuario puede, también el autor del bug. El autor de la
+        solución sale del token.
+      tags:
+        - Soluciones
+      parameters:
+        - $ref: "#/components/parameters/BugId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SolutionInput"
+      responses:
+        "201":
+          $ref: "#/components/responses/BugOk"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  "/api/bugs/{id}/solutions/{solutionId}":
+    delete:
+      summary: Borrar una solución (solo su autor o un admin)
+      tags:
+        - Soluciones
+      parameters:
+        - $ref: "#/components/parameters/BugId"
+        - $ref: "#/components/parameters/SolutionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/BugOk"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  "/api/bugs/{id}/solutions/{solutionId}/verify":
+    patch:
+      summary: Verificar o desverificar una solución (solo admin)
+      tags:
+        - Soluciones
+      parameters:
+        - $ref: "#/components/parameters/BugId"
+        - $ref: "#/components/parameters/SolutionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyInput"
+      responses:
+        "200":
+          $ref: "#/components/responses/BugOk"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"

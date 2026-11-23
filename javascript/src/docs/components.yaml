@@ -1,0 +1,292 @@
+# Piezas reutilizables: esquemas, parámetros y respuestas.
+# Se usan desde auth.yaml y bugs.yaml con $ref: '#/components/...'
+# (El esquema Technology se genera en src/config/swagger.ts a partir de constants.ts)
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 6749c0aaaaaaaaaaaaaaaaaa
+        username:
+          type: string
+          example: ana
+        email:
+          type: string
+          format: email
+          example: ana@ejemplo.com
+        role:
+          type: string
+          enum:
+            - user
+            - admin
+          example: user
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RegisterInput:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - passwordRepeat
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          example: carla
+        email:
+          type: string
+          format: email
+          example: carla@ejemplo.com
+        password:
+          type: string
+          minLength: 8
+          example: supersecreta
+        passwordRepeat:
+          type: string
+          example: supersecreta
+    LoginInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: ana@ejemplo.com
+        password:
+          type: string
+          example: supersecreta
+    Solution:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 674a20bbbbbbbbbbbbbbbbbb
+        text:
+          type: string
+          example: Instalar el paquete cors y añadir app.use(cors()) antes de las rutas.
+        code:
+          type: string
+          example: app.use(cors());
+        author:
+          description: Copia del autor (no es una referencia)
+          type: object
+          properties:
+            id:
+              type: string
+              example: 6749c1bbbbbbbbbbbbbbbbbb
+            username:
+              type: string
+              example: bea
+        verified:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Bug:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 674a1faaaaaaaaaaaaaaaaaa
+        name:
+          type: string
+          example: El CORS Salvaje
+        errorMessage:
+          type: string
+          example: Access to fetch has been blocked by CORS policy
+        description:
+          type: string
+          example: El front no puede hablar con la API. En Postman funciona, pero en el
+            navegador no.
+        code:
+          type: string
+          example: fetch('http://localhost:3000/api/bugs')
+        technologies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Technology"
+        dangerLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        author:
+          description: Referencia a User, rellenada con populate (solo el username)
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 6749c0aaaaaaaaaaaaaaaaaa
+            username:
+              type: string
+              example: ana
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Solution"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BugUpdate:
+      type: object
+      description: Todos los campos son opcionales; solo se cambian los que se envían
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 60
+          example: El CORS Salvaje
+        errorMessage:
+          type: string
+          maxLength: 500
+          example: Access to fetch has been blocked by CORS policy
+        description:
+          type: string
+          maxLength: 2000
+          example: El front no puede hablar con la API. En Postman funciona, pero en el
+            navegador no.
+        code:
+          type: string
+          maxLength: 3000
+        technologies:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Technology"
+        dangerLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+    BugInput:
+      allOf:
+        - $ref: "#/components/schemas/BugUpdate"
+        - type: object
+          required:
+            - name
+            - description
+            - technologies
+            - dangerLevel
+    SolutionInput:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          maxLength: 2000
+          example: Instalar el paquete cors y añadir app.use(cors()) antes de las rutas.
+        code:
+          type: string
+          maxLength: 3000
+          example: app.use(cors());
+    VerifyInput:
+      type: object
+      required:
+        - verified
+      properties:
+        verified:
+          type: boolean
+          example: true
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Ese bug no existe
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Hay datos que no son válidos
+        details:
+          type: object
+          description: El error de cada campo (solo en los errores de validación)
+          additionalProperties:
+            type: string
+          example:
+            name: El nombre es obligatorio
+            dangerLevel: La peligrosidad máxima es 5
+  parameters:
+    BugId:
+      in: path
+      name: id
+      required: true
+      description: El _id del bug
+      schema:
+        type: string
+        example: 674a1faaaaaaaaaaaaaaaaaa
+    SolutionId:
+      in: path
+      name: solutionId
+      required: true
+      description: El _id de la solución
+      schema:
+        type: string
+        example: 674a20bbbbbbbbbbbbbbbbbb
+  responses:
+    BugOk:
+      description: El bug (con el nombre de su autor y sus soluciones)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: "#/components/schemas/Bug"
+    BadRequest:
+      description: Datos no válidos, id mal formado o JSON mal escrito
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+    Unauthorized:
+      description: Falta el token (ni en la cabecera ni en la cookie), o es inválido o ha caducado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: No hay token de autenticación
+    Forbidden:
+      description: No tienes permiso (no eres el autor ni admin, o la ruta es solo
+        para admin)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: No tienes permiso
+    NotFound:
+      description: No existe
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: El email o el username ya están registrados
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: Ese email ya está registrado

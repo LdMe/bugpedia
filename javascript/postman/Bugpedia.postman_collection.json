@@ -1,0 +1,1252 @@
+{
+  "info": {
+    "_postman_id": "69887af8-187c-4e2c-be29-fdd1310c7806",
+    "name": "Bugpedia API",
+    "description": "Todas las peticiones de la API de Bugpedia.\n\nOrden recomendado: ejecutar las carpetas de arriba abajo. Los tokens y los ids se guardan solos en las variables de la colección.\n\nEl token se puede enviar de dos formas: en la cabecera Authorization (lo que hacen casi todas las peticiones, con {{token}}, {{tokenBea}} o {{adminToken}}) o en la cookie \"token\", que pone el login y Postman guarda y envía sola. Si llegan las dos, manda la cabecera. Las peticiones \"sin token\" tienen desactivadas las cookies para que de verdad no lleven token.\n\nUsuarios del seed (database/scripts/01-seed.js), todos con la contraseña \"supersecreta\":\n- profe@bugpedia.dev (admin)\n- ana@ejemplo.com\n- bea@ejemplo.com\n- carlos@ejemplo.com\n\nEl seed solo se carga la primera vez que arranca Mongo. Para empezar de cero: docker compose down -v && docker compose up --build",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenBea",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "bugId",
+      "value": ""
+    },
+    {
+      "key": "solutionId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Registro (carla, usuaria nueva)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"carla\",\n  \"email\": \"carla@ejemplo.com\",\n  \"password\": \"supersecreta\",\n  \"passwordRepeat\": \"supersecreta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Registro intentando ser admin → se ignora el rol",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"listillo\",\n  \"email\": \"listillo@ejemplo.com\",\n  \"password\": \"supersecreta\",\n  \"passwordRepeat\": \"supersecreta\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Registro con contraseñas distintas → 400",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dani\",\n  \"email\": \"dani@ejemplo.com\",\n  \"password\": \"supersecreta\",\n  \"passwordRepeat\": \"otracosa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Registro con email repetido (ana ya existe) → 409",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ana2\",\n  \"email\": \"ana@ejemplo.com\",\n  \"password\": \"supersecreta\",\n  \"passwordRepeat\": \"supersecreta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Registro con datos inválidos → 400 con details",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"x\",\n  \"email\": \"no-es-un-email\",\n  \"password\": \"supersecreta\",\n  \"passwordRepeat\": \"supersecreta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login (ana)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@ejemplo.com\",\n  \"password\": \"supersecreta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) pm.collectionVariables.set('token', json.data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (bea)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bea@ejemplo.com\",\n  \"password\": \"supersecreta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) pm.collectionVariables.set('tokenBea', json.data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (profe, admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"profe@bugpedia.dev\",\n  \"password\": \"supersecreta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) pm.collectionVariables.set('adminToken', json.data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login incorrecto → 401",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@ejemplo.com\",\n  \"password\": \"incorrecta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Me con la cookie (sin cabecera)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Sin cabecera Authorization: el token llega en la cookie que guardó el último login (el del profe)."
+          }
+        },
+        {
+          "name": "Me sin token → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Bugs",
+      "item": [
+        {
+          "name": "Crear bug",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"El CORS Salvaje\",\n  \"errorMessage\": \"Access to fetch at 'http://localhost:3000/api/bugs' from origin 'http://localhost:5173' has been blocked by CORS policy\",\n  \"description\": \"El front no puede hablar con la API. En Postman funciona, pero en el navegador no.\",\n  \"technologies\": [\n    \"express\",\n    \"react\"\n  ],\n  \"dangerLevel\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('bugId', json.data._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear bug sin token → 401",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"El CORS Salvaje\",\n  \"errorMessage\": \"Access to fetch at 'http://localhost:3000/api/bugs' from origin 'http://localhost:5173' has been blocked by CORS policy\",\n  \"description\": \"El front no puede hablar con la API. En Postman funciona, pero en el navegador no.\",\n  \"technologies\": [\n    \"express\",\n    \"react\"\n  ],\n  \"dangerLevel\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          }
+        },
+        {
+          "name": "Crear bug inválido → 400 con details",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"technologies\": [\n    \"cobol\"\n  ],\n  \"dangerLevel\": 9\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Crear bug enviando author y solutions → se ignoran",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"El Puerto Okupa\",\n  \"errorMessage\": \"Error: listen EADDRINUSE: address already in use :::3000\",\n  \"description\": \"Al arrancar la API dice que el puerto 3000 está ocupado.\",\n  \"technologies\": [\n    \"node\",\n    \"express\"\n  ],\n  \"dangerLevel\": 2,\n  \"author\": \"000000000000000000000000\",\n  \"solutions\": [\n    {\n      \"text\": \"trampa\",\n      \"verified\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar bugs (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Listar bugs de react",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs?technology=react",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ],
+              "query": [
+                {
+                  "key": "technology",
+                  "value": "react"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Listar con tecnología inválida → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs?technology=cobol",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs"
+              ],
+              "query": [
+                {
+                  "key": "technology",
+                  "value": "cobol"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Ver un bug (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Ver con id mal formado → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/patata",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "patata"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Ver un bug que no existe → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/000000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "000000000000000000000000"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Editar bug (ana, autora)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dangerLevel\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Editar bug de otra (bea) → 403",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenBea}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dangerLevel\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Editar bug como admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"El front no puede hablar con la API: falta configurar CORS en el backend.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Borrar bug de otra (bea) → 403",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenBea}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Soluciones",
+      "item": [
+        {
+          "name": "Añadir solución (bea)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenBea}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Instalar el paquete cors en la API y añadir app.use(cors()) antes de las rutas.\",\n  \"code\": \"import cors from \\\"cors\\\";\\napp.use(cors());\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('solutionId', json.data.solutions.at(-1)._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Añadir solución vacía → 400",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Verificar como user → 403",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions/{{solutionId}}/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions",
+                "{{solutionId}}",
+                "verify"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Verificar como admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions/{{solutionId}}/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions",
+                "{{solutionId}}",
+                "verify"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Verificar sin booleano → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions/{{solutionId}}/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions",
+                "{{solutionId}}",
+                "verify"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": \"sí\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Borrar solución de otra (ana) → 403",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions/{{solutionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions",
+                "{{solutionId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Limpieza",
+      "item": [
+        {
+          "name": "Borrar solución (bea, autora)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}/solutions/{{solutionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}",
+                "solutions",
+                "{{solutionId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenBea}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Borrar bug (ana, autora)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ver el bug borrado → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bugs/{{bugId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bugs",
+                "{{bugId}}"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Logout (borra la cookie)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Me con la cookie tras el logout → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Ya no hay cookie: el logout la ha borrado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ruta que no existe → 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/no-existe",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "no-existe"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "JSON mal escrito → 400",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{ esto no es json",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

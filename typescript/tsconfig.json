@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    // Node ejecuta los .ts directamente (quita los tipos y ejecuta el JavaScript que queda).
+    // TypeScript solo se usa para COMPROBAR los tipos: npm run type-check
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,                      // no genera archivos .js
+    "allowImportingTsExtensions": true,  // permite import ... from "./archivo.ts"
+    "erasableSyntaxOnly": true,          // avisa si usamos algo que Node no sabe quitar (enum, etc.)
+    "verbatimModuleSyntax": true,        // obliga a escribir "import type" para los tipos
+    "skipLibCheck": true
+  },
+  "include": ["src", "__tests__"]
+}
