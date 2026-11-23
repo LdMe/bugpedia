@@ -11,7 +11,7 @@ import { env } from "./env.js";
 const buildMongoUri = () => {
   const user = encodeURIComponent(env.MONGO_USER);
   const password = encodeURIComponent(env.MONGO_PASSWORD);
-  return `mongodb://${user}:${password}@${env.MONGO_HOST}:${env.MONGO_PORT}/${env.MONGO_DB}?authSource=${env.MONGO_AUTH_SOURCE}`;
+  return `mongodb://${user}:${password}@${env.MONGO_HOST}:27017/${env.MONGO_DB}?authSource=${env.MONGO_AUTH_SOURCE}`;
 };
 
 /**
