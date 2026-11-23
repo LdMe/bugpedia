@@ -6,7 +6,7 @@ import bugRouter from "./bug.routes.js";
 const router = Router();
 
 router.get("/health", (req, res) => {
-  res.json({ message: "Tutto bene" });
+  res.json({ message: "API en funcionamiento" });
 });
 
 router.use("/auth", authRouter);
